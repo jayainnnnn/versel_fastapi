@@ -19,7 +19,7 @@ from selenium.common.exceptions import TimeoutException
 from sqlalchemy.orm import Session
 from datetime import date
 from database import SessionLocal
-from model import new_products,Products
+from model import new_products,Products,product_ids
 
 import re
 
@@ -46,6 +46,12 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
         product_url = add_url.url,
         email = add_url.email,
         product_id = product_id
+    ))
+    db.commit()
+    
+    db.add(product_ids(
+        product_id = product_id,
+        url = add_url.url
     ))
     db.commit()
 

@@ -8,15 +8,17 @@ class Products(Base):
     product_url = Column(String, nullable=False)
     product_image = Column(String,nullable=False)
     product_price = Column(Integer,nullable=False)
-    date = Column(Date, nullable=False)
-    product_id = Column(Integer,nullable=False)
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    date = Column(Date, primary_key=True)
+    product_id = Column(Integer,primary_key=True)
 class new_products(Base):
     __tablename__ = "user_urls"
     product_url = Column(String,nullable=False)
-    email = Column(String,nullable=False)
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    product_id = Column(Integer,nullable=False)
+    email = Column(String,primary_key=True)
+    product_id = Column(Integer,primary_key=True)
+class product_ids(Base):
+    __tablename__ = "product_ids"
+    product_id = Column(String,primary_key=True)
+    url = Column(String,nullable=False)
 
 
 
