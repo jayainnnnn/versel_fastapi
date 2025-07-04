@@ -60,7 +60,7 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
 
     driver = webdriver.Chrome(options)
     driver.get(add_url.url)
-    wait = WebDriverWait(driver,10)
+    wait = WebDriverWait(driver,30)
     print(1)
 
     try:
@@ -68,15 +68,20 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
         print(2)
         wait.until(EC.element_to_be_clickable((By.ID,"landingImage")))
         print(3)
-        wait.until(EC.element_to_be_clickable((By.CLASS_NAME,"a-price-whole")))
-        print(4)
 
-        try:
-            price = driver.find_element(By.CLASS_NAME, "a-price-whole").text
-            price = int(price.replace(",", "").strip())
-            print(5)
-        except:
-            price = 0
+        # wait.until(EC.element_to_be_clickable((By.CLASS_NAME,"a-price-whole")))
+        # print(4)
+
+        # price = driver.find_element(By.CLASS_NAME, "a-price-whole").text
+        # price = int(price.replace(",", "").strip())
+        # print(5)
+        price_element = wait.until(EC.presence_of_element_located((
+                By.XPATH,
+                '//span[contains(@class,"priceToPay")]//span[@class="a-price-whole"]'
+            )))
+        price_text = price_element.text.strip().replace(",", "")
+        price = int(price_text) if price_text else 0
+
         name = driver.find_element(By.ID, "productTitle").text.strip()
         image = driver.find_element(By.ID, "landingImage").get_attribute("src")
         today = date.today()
