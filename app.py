@@ -22,6 +22,7 @@ from database import SessionLocal
 from model import new_products,Products,product_ids
 
 import re
+import time
 
 
 
@@ -68,13 +69,6 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
         print(2)
         wait.until(EC.element_to_be_clickable((By.ID,"landingImage")))
         print(3)
-
-        # wait.until(EC.element_to_be_clickable((By.CLASS_NAME,"a-price-whole")))
-        # print(4)
-
-        # price = driver.find_element(By.CLASS_NAME, "a-price-whole").text
-        # price = int(price.replace(",", "").strip())
-        # print(5)
         price_element = wait.until(EC.presence_of_element_located((
                 By.XPATH,
                 '//span[contains(@class,"priceToPay")]//span[@class="a-price-whole"]'
@@ -105,3 +99,59 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
 
 
     return JSONResponse(status_code=201, content={"message": "URL ADDED SUCCESSFUL"})
+
+
+class search_product(BaseModel):
+    name : Annotated[str,Field(...,description="name of new product")]
+    email : Annotated[EmailStr,Field(...,description="email of person")]
+
+@app.post('/searchproduct')
+def search_products(searchquery: search_product, db: Session = Depends(get_db)):
+    product_name = searchquery.name
+
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
+
+    wait = WebDriverWait(driver, 10)
+
+    search_url = f"https://www.amazon.in/s?k={product_name}"
+    results = []
+    driver.get(search_url)
+    max_attempts = 3
+
+    for attempt in range(max_attempts):
+        
+        driver.get(search_url)
+
+        products = driver.find_elements(By.CSS_SELECTOR, 'div.s-widget-container[data-csa-c-type="item"]')
+        for product in products:
+            try:
+                title = product.find_element(By.CSS_SELECTOR, 'a.a-link-normal.a-text-normal').text
+                link = product.find_element(By.CSS_SELECTOR, 'a.a-link-normal').get_attribute('href')
+                product_id = re.search(r'/dp/([A-Z0-9]{10})', link).group(1)
+                img = product.find_element(By.CSS_SELECTOR, 'img.s-image').get_attribute('src')
+                price = product.find_element(By.CSS_SELECTOR, 'span.a-price-whole').text
+                print(f"Title: {title}\nLink: {link}\nImage: {img}\nPrice: ₹{price}\n---")
+            except:
+                continue
+
+            results.append({
+                    "title": title,
+                    "product_id": product_id,
+                    "image": img,
+                    "price": price
+            })
+
+            if len(results) >= 50:
+                break  
+
+        if results:
+            driver.quit()
+            return JSONResponse(status_code=201, content={"results":results})
+        print(attempt)
+    driver.quit()
+    return JSONResponse(status_code=404,content={"message":"NO PRODUCTS FOUND"})
+
+
+
