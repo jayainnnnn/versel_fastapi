@@ -6,7 +6,7 @@ from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-from model import Base,Products,new_products
+from model import Base,Products
 from database import SessionLocal, engine
 
 
@@ -16,10 +16,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 
-from sqlalchemy.orm import Session
-from datetime import date
-from database import SessionLocal
-from model import new_products,Products,product_ids
 
 import re
 import time
@@ -38,32 +34,18 @@ def get_db():
         db.close()
 
 class add_product(BaseModel):
-    url : Annotated[str,Field(...,description="url of new product")]
-    email : Annotated[EmailStr,Field(...,description="email of new person")]
+    product_id : Annotated[str,Field(...,description="id of new product")]
+    product_url : Annotated[str,Field(...,description="url of new product")]
 @app.post("/addproduct")
-def addproduct(add_url: add_product, db: Session = Depends(get_db)):
-    product_id = re.search(r'/dp/([A-Z0-9]{10})', add_url.url).group(1)
-    db.add(new_products(
-        product_url = add_url.url,
-        email = add_url.email,
-        product_id = product_id
-    ))
-    db.commit()
-    
-    db.add(product_ids(
-        product_id = product_id,
-        url = add_url.url
-    ))
-    db.commit()
+def addproduct(add_id: add_product, db: Session = Depends(get_db)):
 
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
 
-    driver = webdriver.Chrome(options)
-    driver.get(add_url.url)
+    driver = webdriver.Chrome(options=options)
+    driver.get(add_id.product_url)
     wait = WebDriverWait(driver,30)
     print(1)
-
     try:
         wait.until(EC.element_to_be_clickable((By.ID,"productTitle")))
         print(2)
@@ -80,17 +62,17 @@ def addproduct(add_url: add_product, db: Session = Depends(get_db)):
         image = driver.find_element(By.ID, "landingImage").get_attribute("src")
         today = date.today()
         print(6)
-        new_data = Products(
-        product_name = name,
-        product_url = add_url.url,
-        product_image = image,
-        product_price = price,
-        date = today,
-        product_id = product_id
+        new_data = Products(  
+            product_id = add_id.product_id,
+            product_url = add_id.product_url,
+            product_name = name,
+            product_price = price,
+            product_discount = 0,
+            product_image = image,
+            date = today,
+            product_max_price = price
         )
-        print(name,price,today)
         db.add(new_data)
-        print(7)
     except TimeoutException:
         print(f"Element not found for index , skipping...")
     db.commit()
