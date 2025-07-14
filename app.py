@@ -148,7 +148,7 @@ def search_products(searchquery: search_product, db: Session = Depends(get_db)):
 
         if results:
             driver.quit()
-            return JSONResponse(status_code=201, content={"results":results})
+            return JSONResponse(status_code=200, content=results)
         print(attempt)
     driver.quit()
     return JSONResponse(status_code=404,content={"message":"NO PRODUCTS FOUND"})
