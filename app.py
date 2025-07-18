@@ -73,14 +73,21 @@ def addproduct(add_id: add_product, db: Session = Depends(get_db)):
             product_max_price = price
         )
         db.add(new_data)
+        db.commit()
+        return JSONResponse(status_code=200, content={
+            "status": "success",
+            "product_id": new_data.product_id,
+            "product_name": new_data.product_name,
+            "product_price": new_data.product_price,
+            "product_image": new_data.product_image
+        })
     except TimeoutException:
-        print(f"Element not found for index , skipping...")
-    db.commit()
-    db.close()
-
-
-
-    return JSONResponse(status_code=201, content={"message": "URL ADDED SUCCESSFUL"})
+        return JSONResponse(status_code=400, content={
+            "status": "failed"
+        })
+    finally:
+        driver.quit()
+        db.close()
 
 
 class search_product(BaseModel):
