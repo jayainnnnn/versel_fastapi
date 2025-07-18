@@ -87,7 +87,6 @@ def addproduct(add_id: add_product, db: Session = Depends(get_db)):
         })
     finally:
         driver.quit()
-        db.close()
 
 
 class search_product(BaseModel):
