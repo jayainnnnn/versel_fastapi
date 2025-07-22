@@ -128,7 +128,8 @@ def search_products(searchquery: search_product, db: Session = Depends(get_db)):
                     "title": title,
                     "product_id": product_id,
                     "image": img,
-                    "price": price
+                    "price": price,
+                    # "url": link
             })
 
             if len(results) >= 50:
