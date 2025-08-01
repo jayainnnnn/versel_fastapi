@@ -45,7 +45,8 @@ def addproduct(add_id: add_product, db: Session = Depends(get_db)):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--headless')      
 
-    driver = webdriver.Chrome(options=options)
+    service = Service("/usr/bin/chromedriver")
+    driver = webdriver.Chrome(service=service,options=options)
     driver.get(add_id.product_url)
     wait = WebDriverWait(driver,30)
     print(1)
@@ -106,7 +107,7 @@ def search_products(searchquery: search_product, db: Session = Depends(get_db)):
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--headless')
     service = Service("/usr/bin/chromedriver")
-    driver = webdriver.Chrome(service,options=options)
+    driver = webdriver.Chrome(service=service,options=options)
 
     wait = WebDriverWait(driver, 10)
 
