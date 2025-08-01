@@ -5,7 +5,7 @@ from datetime import date
 from typing import Annotated
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-
+from selenium.webdriver.chrome.service import Service
 from model import Base,Products
 from database import SessionLocal, engine
 
@@ -41,6 +41,9 @@ def addproduct(add_id: add_product, db: Session = Depends(get_db)):
 
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')      
 
     driver = webdriver.Chrome(options=options)
     driver.get(add_id.product_url)
@@ -99,7 +102,11 @@ def search_products(searchquery: search_product, db: Session = Depends(get_db)):
 
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    service = Service("/usr/bin/chromedriver")
+    driver = webdriver.Chrome(service,options=options)
 
     wait = WebDriverWait(driver, 10)
 
